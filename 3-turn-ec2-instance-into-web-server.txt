@@ -1,15 +1,3 @@
-AWS Instructions
-
--  Change e-mail to something else
--  Close account
--  Create new account with e-mail.
--  Set up two factor authentication -> My Security Credentials
--  Allow IAM users to view billing information. Go to My Account
-"IAM User and Role Access to Billing Information"
-- Follow these steps: https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html
-- https://039085306114.signin.aws.amazon.com/console
-- https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
-
 https://www.youtube.com/watch?v=hiKPPy584Mg&t=76s
 https://docs.aws.amazon.com/vpc/latest/userguide/vpc-subnets-commands-example.html#vpc-subnets-commands-example-public-subnet
 
@@ -91,18 +79,47 @@ aws ec2 describe-security-groups
 aws ec2 create-security-group --group-name SSHAccess --description "Security group for SSH access" --vpc-id vpc-0cfbc96fbaef27b5e
 aws ec2 authorize-security-group-ingress --group-id sg-05cd677a2f4a11771 --protocol tcp --port 22 --cidr xx.xx.xx.xx/32
 
+// Create security group in VPC
+aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 authorize-security-group-ingress --group-id sg-0ee0e372076b5a895 --protocol tcp --port 80 --cidr 86.91.242.121/32
+
 // Create ec2 instance ami-0db9040eb3ab74509
-aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-05cd677a2f4a11771 --subnet-id subnet-066be760f64aba411
+aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-05cd677a2f4a11771 sg-0ee0e372076b5a895 --subnet-id subnet-066be760f64aba411
 
 // SSH into
-ssh -i key-pair-for-instance1.pem ec2-user@xx.xx.xx.xx
+ssh -i key-pair-for-instance1.pem ec2-user@3.65.219.23
 
-aws ec2 describe-internet-gateways
+https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-up-node-on-ec2-instance.html
 
-// Note that the vpc always has a default route table
-aws ec2 describe-route-tables
-aws ec2 describe-route-tables --route-table-id rtb-04c386fe8410bb542
+Check out the nvm github for the latest install script to install nvm:
+https://github.com/nvm-sh/nvm/blob/master/README.md
 
-// Delete everything again
-aws ec2 delete-internet-gateway --internet-gateway-id igw-01f198426702b59af
-aws ec2 delete-route-table --route-table-id rtb-04c386fe8410bb542
+After running the above script it outputs a script you can run to get nvm available on your path
+
+// Install the latest Node.js,
+nvm install node
+
+Execute the following commands to create a node project:
+mkdir hello-world
+cd hello-world
+touch index.js (paste the contents from hello-world/index.js)
+
+Run the following command to start node:
+node index.js &
+
+The node server uses port 8080 instead of 80, because 80 is not allowed without running as root (which is not recommended).
+
+To make sure incoming traffic on port 80 gets redirected to our node server, run the following:
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+Source: https://gist.github.com/kentbrew/776580
+
+Try to reach it with a browser on the public ip that was given to the instance
+http://xx.xx.xx.xx/
+
+It should return a 200 response and hello world.
+
+You can kill it with:
+ps -e grep node
+kill -9 <the first number of previous command>
+
+Source: https://stackoverflow.com/questions/20091433/cant-find-out-where-does-a-node-js-app-running-and-cant-kill-it

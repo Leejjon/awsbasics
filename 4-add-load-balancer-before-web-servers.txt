@@ -1,0 +1,130 @@
+https://www.youtube.com/watch?v=hiKPPy584Mg&t=76s
+https://docs.aws.amazon.com/vpc/latest/userguide/vpc-subnets-commands-example.html#vpc-subnets-commands-example-public-subnet
+
+aws init = set up connection
+aws iam get-user = show what user is currently used
+
+// List all vpcs
+aws ec2 describe-vpcs
+
+// Create VPC
+aws ec2 create-vpc --cidr-block 172.31.0.0/16
+
+// Delete VPC
+aws ec2 delete-vpc --vpc-id <id>
+
+// Give VPC a name
+aws ec2 create-tags --resources vpc-0cfbc96fbaef27b5e --tags Key=Name,Value=basic-vpc
+
+// Show the three different availability zones of eu-central-1
+aws ec2 describe-availability-zones
+
+// List subnets (you'll also see the subnets of the default vpc, ignore them)
+aws ec2 describe-subnets
+
+// List subnets by vpc id
+aws ec2 describe-subnets --filters Name=vpc-id,Values=vpc-0cfbc96fbaef27b5e
+
+// Create public subnets in two of these three, two is fine enough for our demo purposes.
+aws ec2 create-subnet --cidr-block 172.31.0.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az2
+aws ec2 create-subnet --cidr-block 172.31.1.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az3
+
+// Create two private subnets
+aws ec2 create-subnet --cidr-block 172.31.2.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az2
+aws ec2 create-subnet --cidr-block 172.31.3.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az3
+
+// Delete public and private subnets
+aws ec2 delete-subnet --subnet-id subnet-066be760f64aba411
+aws ec2 delete-subnet --subnet-id subnet-0f81e9d1e089a99da
+aws ec2 delete-subnet --subnet-id subnet-050bcaac94fba9394
+aws ec2 delete-subnet --subnet-id subnet-09b288533a25a19c9
+
+// Giving subnets name tags
+aws ec2 create-tags --resources subnet-066be760f64aba411 --tags Key=Name,Value=public-subnet-a
+aws ec2 create-tags --resources subnet-0f81e9d1e089a99da --tags Key=Name,Value=public-subnet-b
+aws ec2 create-tags --resources subnet-050bcaac94fba9394 --tags Key=Name,Value=private-subnet-a
+aws ec2 create-tags --resources subnet-09b288533a25a19c9 --tags Key=Name,Value=private-subnet-b
+
+// List internet gateways
+aws ec2 describe-internet-gateways
+
+// Create an internet gateway
+aws ec2 create-internet-gateway
+aws ec2 create-tags --resources igw-01f198426702b59af --tags Key=Name,Value=internet-gateway
+
+// Attach it to our VPC
+aws ec2 attach-internet-gateway --vpc-id vpc-0cfbc96fbaef27b5e --internet-gateway-id igw-01f198426702b59af
+
+// Creating a route table for the public subnets
+aws ec2 create-route-table --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 create-route --route-table-id rtb-04c386fe8410bb542 --destination-cidr-block 0.0.0.0/0 --gateway-id igw-01f198426702b59af
+aws ec2 create-tags --resources rtb-04c386fe8410bb542 --tags Key=Name,Value=route-table
+
+// Attach the route tables
+aws ec2 associate-route-table --subnet-id subnet-066be760f64aba411 --route-table-id rtb-04c386fe8410bb542
+aws ec2 associate-route-table --subnet-id subnet-0f81e9d1e089a99da --route-table-id rtb-04c386fe8410bb542
+
+// Give everything in subnet a public ip:
+aws ec2 modify-subnet-attribute --subnet-id subnet-066be760f64aba411 --map-public-ip-on-launch
+aws ec2 modify-subnet-attribute --subnet-id subnet-0f81e9d1e089a99da --map-public-ip-on-launch
+
+// Create EC2 instance
+aws ec2 create-key-pair --key-name key-pair-for-instance1 --query 'KeyMaterial' --output text > key-pair-for-instance1.pem
+aws ec2 create-key-pair --key-name key-pair-for-instance2 --query 'KeyMaterial' --output text > key-pair-for-instance2.pem
+
+chmod 400 key-pair-for-instance1.pem
+
+// Create security group in VPC and add rule for allowing ssh
+aws ec2 describe-security-groups
+aws ec2 create-security-group --group-name SSHAccess --description "Security group for SSH access" --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 authorize-security-group-ingress --group-id sg-05cd677a2f4a11771 --protocol tcp --port 22 --cidr xx.xx.xx.xx/32
+
+#######
+// Create security group in VPC and add a rule for allowing http traffic
+aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 authorize-security-group-ingress --group-id sg-0ee0e372076b5a895 --protocol tcp --port 80 --cidr 86.91.242.121/32
+#######
+
+https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancer-cli.html
+https://aws.amazon.com/premiumsupport/knowledge-center/public-load-balancer-private-ec2/
+
+// Create ec2 instance ami-0db9040eb3ab74509
+aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-05cd677a2f4a11771 sg-0ee0e372076b5a895 --subnet-id subnet-066be760f64aba411
+
+// SSH into
+ssh -i key-pair-for-instance1.pem ec2-user@3.65.219.23
+
+https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-up-node-on-ec2-instance.html
+
+Check out the nvm github for the latest install script to install nvm:
+https://github.com/nvm-sh/nvm/blob/master/README.md
+
+After running the above script it outputs a script you can run to get nvm available on your path
+
+// Install the latest Node.js,
+nvm install node
+
+Execute the following commands to create a node project:
+mkdir hello-world
+cd hello-world
+touch index.js (paste the contents from hello-world/index.js)
+
+Run the following command to start node:
+node index.js &
+
+The node server uses port 8080 instead of 80, because 80 is not allowed without running as root (which is not recommended).
+
+To make sure incoming traffic on port 80 gets redirected to our node server, run the following:
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+Source: https://gist.github.com/kentbrew/776580
+
+Try to reach it with a browser on the public ip that was given to the instance
+http://xx.xx.xx.xx/
+
+It should return a 200 response and hello world.
+
+You can kill it with:
+ps -e grep node
+kill -9 <the first number of previous command>
+
+Source: https://stackoverflow.com/questions/20091433/cant-find-out-where-does-a-node-js-app-running-and-cant-kill-it

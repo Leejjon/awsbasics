@@ -1,0 +1,11 @@
+AWS Instructions
+
+-  Change e-mail to something else
+-  Close account
+-  Create new account with e-mail.
+-  Set up two factor authentication -> My Security Credentials
+-  Allow IAM users to view billing information. Go to My Account
+"IAM User and Role Access to Billing Information"
+- Follow these steps: https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html
+- https://<youraccountid>.signin.aws.amazon.com/console
+- https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
