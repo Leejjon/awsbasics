@@ -9,3 +9,12 @@ AWS Instructions
 - Follow these steps: https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html
 - https://<youraccountid>.signin.aws.amazon.com/console
 - https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
+
+Install the session manager plugin from this instructions:
+https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-linux
+
+Take the Intel 64 bit link for "Ubuntu server" even though I'm on Ubuntu desktop
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+sudo dpkg -i session-manager-plugin.deb
+
+
