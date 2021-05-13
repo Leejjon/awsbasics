@@ -1,5 +1,4 @@
-https://www.youtube.com/watch?v=hiKPPy584Mg&t=76s
-https://docs.aws.amazon.com/vpc/latest/userguide/vpc-subnets-commands-example.html#vpc-subnets-commands-example-public-subnet
+https://docs.google.com/drawings/d/e/2PACX-1vS6yxB1n0HIj61lW8BM-XsrgkjrzecjZ_l2uZ4susVpmA_1XVy8Rauy68aA9x4cr06XjiVzVHuEXkti/pub?w=960&h=720
 
 aws init = set up connection
 aws iam get-user = show what user is currently used
@@ -97,8 +96,6 @@ aws iam delete-instance-profile --instance-profile-name ssm-instance-profile-for
 aws iam detach-role-policy --role-name ec2-role --policy-arn "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 aws iam delete-role --role-name ec2-role
 
-// For some reason this all
-
 // Create EC2 instance
 aws ec2 create-key-pair --key-name key-pair-for-instance1 --query 'KeyMaterial' --output text > key-pair-for-instance1.pem
 aws ec2 create-key-pair --key-name key-pair-for-instance2 --query 'KeyMaterial' --output text > key-pair-for-instance2.pem
@@ -117,3 +114,4 @@ aws ssm describe-instance-information
 
 // SSH into ec2 instance via AWS Systems Manager
 aws ssm start-session --target i-057e4c58a6b7865a8
+

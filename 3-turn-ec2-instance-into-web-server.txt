@@ -1,7 +1,7 @@
 https://www.youtube.com/watch?v=hiKPPy584Mg&t=76s
 https://docs.aws.amazon.com/vpc/latest/userguide/vpc-subnets-commands-example.html#vpc-subnets-commands-example-public-subnet
 
-https://lucid.app/publicSegments/view/d62c8a4e-668c-4127-9e6e-1729d2f0c779/image.png
+https://docs.google.com/drawings/d/e/2PACX-1vTVdKv2ewIaznh7YL-H7deBYphOCDlfelEOwspOEA3yd19Jw-TTCLtA3rpj2HiPLrVTyzC8LM0KP4II/pub?w=960&h=720
 
 aws init = set up connection
 aws iam get-user = show what user is currently used
