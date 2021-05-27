@@ -91,20 +91,6 @@ aws iam attach-role-policy --role-name ec2-role --policy-arn "arn:aws:iam::aws:p
 aws iam create-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances
 aws iam add-role-to-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances --role-name ec2-role
 
-// In case of deleting roles
-aws iam remove-role-from-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances --role-name ec2-role
-aws iam delete-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances
-aws iam detach-role-policy --role-name ec2-role --policy-arn "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-aws iam delete-role --role-name ec2-role
-
-// For some reason this all
-
-// Create EC2 instance
-aws ec2 create-key-pair --key-name key-pair-for-instance1 --query 'KeyMaterial' --output text > key-pair-for-instance1.pem
-aws ec2 create-key-pair --key-name key-pair-for-instance2 --query 'KeyMaterial' --output text > key-pair-for-instance2.pem
-
-chmod 400 key-pair-for-instance1.pem
-
 aws ec2 describe-security-groups
 
 // Create security group in VPC with outbound access to 0.0.0.0/0 on port 80 add rule for allowing ssh
@@ -179,3 +165,6 @@ aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:eu-ce
 
 // Create listener with target group and loadbalancer
 aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/28410eb694e6b1c6
+
+Note: Access logging is an optional feature of Elastic Load Balancing that is disabled by default. After you enable access logging for your load balancer, Elastic Load Balancing captures the logs and stores them in the Amazon S3 bucket that you specify as compressed files. You can disable access logging at any time.
+Source: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html

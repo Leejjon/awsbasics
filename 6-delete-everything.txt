@@ -1,0 +1,38 @@
+
+aws elbv2 describe-listeners --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
+aws elbv2 delete-listener --listener-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:listener/app/application-load-balancer/97cf62a2e2f0b615/103e0a1e4758a793
+
+aws elbv2 describe-target-groups
+aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/28410eb694e6b1c6
+
+aws elbv2 describe-load-balancers --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
+aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
+
+aws ec2 describe-security-groups
+
+aws ec2 revoke-security-group-ingress --group-id sg-096742150b3b8a4f2 --protocol tcp --port 80 --source-group sg-01b3597513993280c
+
+aws ec2 delete-security-group --group-id sg-01b3597513993280c
+
+aws ec2 delete-security-group --group-id sg-096742150b3b8a4f2
+
+aws ec2 delete-key-pair --name key-pair-for-instance1
+
+aws iam list-instance-profiles
+
+aws iam remove-role-from-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances --role-name ec2-role
+aws iam delete-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances
+aws iam detach-role-policy --role-name ec2-role --policy-arn "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+aws iam delete-role --role-name ec2-role
+
+// Disassociate the route tables with the private subnets
+aws ec2 describe-route-tables
+aws ec2 disassociate-route-table --association-id rtbassoc-065d1835f4fe23963
+aws ec2 disassociate-route-table --association-id rtbassoc-03fdcf59594a8fb9b
+aws ec2 delete-route-table --route-table-id rtb-00b351ba1c55f8b50
+subnet-09b288533a25a19c9 subnet-050bcaac94fba9394
+
+// Disassociate the route tables with the public subnets
+aws ec2 disassociate-route-table --association-id rtbassoc-007bd499d612b9640
+aws ec2 disassociate-route-table --association-id rtbassoc-0637e884a532d3939
+aws ec2 delete-route-table --route-table-id rtb-04c386fe8410bb542
