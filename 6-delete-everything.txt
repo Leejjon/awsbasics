@@ -36,3 +36,19 @@ subnet-09b288533a25a19c9 subnet-050bcaac94fba9394
 aws ec2 disassociate-route-table --association-id rtbassoc-007bd499d612b9640
 aws ec2 disassociate-route-table --association-id rtbassoc-0637e884a532d3939
 aws ec2 delete-route-table --route-table-id rtb-04c386fe8410bb542
+
+aws ec2 describe-addresses
+aws ec2 release-address --allocation-id eipalloc-ac7b7f95
+
+aws ec2 describe-nat-gateways
+aws ec2 delete-nat-gateway --nat-gateway-id nat-08119640b82d74026
+
+aws ec2 detach-internet-gateway --vpc-id vpc-0cfbc96fbaef27b5e --internet-gateway-id igw-01f198426702b59af
+aws ec2 delete-internet-gateway --internet-gateway-id igw-01f198426702b59af
+
+aws ec2 delete-subnet --subnet-id subnet-066be760f64aba411
+aws ec2 delete-subnet --subnet-id subnet-0f81e9d1e089a99da
+aws ec2 delete-subnet --subnet-id subnet-050bcaac94fba9394
+aws ec2 delete-subnet --subnet-id subnet-09b288533a25a19c9
+
+aws ec2 delete-vpc --vpc-id vpc-0cfbc96fbaef27b5e

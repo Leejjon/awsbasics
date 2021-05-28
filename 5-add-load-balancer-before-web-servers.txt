@@ -10,11 +10,8 @@ aws ec2 describe-vpcs
 // Create VPC
 aws ec2 create-vpc --cidr-block 172.31.0.0/16
 
-// Delete VPC
-aws ec2 delete-vpc --vpc-id <id>
-
 // Give VPC a name
-aws ec2 create-tags --resources vpc-0cfbc96fbaef27b5e --tags Key=Name,Value=basic-vpc
+aws ec2 create-tags --resources vpc-04f53b26552a874ba --tags Key=Name,Value=basic-vpc
 
 // Show the three different availability zones of eu-central-1
 aws ec2 describe-availability-zones
@@ -23,25 +20,19 @@ aws ec2 describe-availability-zones
 aws ec2 describe-subnets
 
 // List subnets by vpc id
-aws ec2 describe-subnets --filters Name=vpc-id,Values=vpc-0cfbc96fbaef27b5e
+aws ec2 describe-subnets --filters Name=vpc-id,Values=vpc-04f53b26552a874ba
 
 // Create public subnets in two of these three, two is fine enough for our demo purposes.
-aws ec2 create-subnet --cidr-block 172.31.0.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az2
-aws ec2 create-subnet --cidr-block 172.31.1.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az3
+aws ec2 create-subnet --cidr-block 172.31.0.0/24 --vpc-id vpc-04f53b26552a874ba --availability-zone-id euc1-az2
+aws ec2 create-subnet --cidr-block 172.31.1.0/24 --vpc-id vpc-04f53b26552a874ba --availability-zone-id euc1-az3
 
 // Create two private subnets
-aws ec2 create-subnet --cidr-block 172.31.2.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az2
-aws ec2 create-subnet --cidr-block 172.31.3.0/24 --vpc-id vpc-0cfbc96fbaef27b5e --availability-zone-id euc1-az3
-
-// Delete public and private subnets
-aws ec2 delete-subnet --subnet-id subnet-066be760f64aba411
-aws ec2 delete-subnet --subnet-id subnet-0f81e9d1e089a99da
-aws ec2 delete-subnet --subnet-id subnet-050bcaac94fba9394
-aws ec2 delete-subnet --subnet-id subnet-09b288533a25a19c9
+aws ec2 create-subnet --cidr-block 172.31.2.0/24 --vpc-id vpc-04f53b26552a874ba --availability-zone-id euc1-az2
+aws ec2 create-subnet --cidr-block 172.31.3.0/24 --vpc-id vpc-04f53b26552a874ba --availability-zone-id euc1-az3
 
 // Giving subnets name tags
-aws ec2 create-tags --resources subnet-066be760f64aba411 --tags Key=Name,Value=public-subnet-a
-aws ec2 create-tags --resources subnet-0f81e9d1e089a99da --tags Key=Name,Value=public-subnet-b
+aws ec2 create-tags --resources subnet-0d0ef1f270d7f4f74 --tags Key=Name,Value=public-subnet-a
+aws ec2 create-tags --resources subnet-0a04f996d4d867e76 --tags Key=Name,Value=public-subnet-b
 aws ec2 create-tags --resources subnet-050bcaac94fba9394 --tags Key=Name,Value=private-subnet-a
 aws ec2 create-tags --resources subnet-09b288533a25a19c9 --tags Key=Name,Value=private-subnet-b
 
@@ -53,28 +44,28 @@ aws ec2 create-internet-gateway
 aws ec2 create-tags --resources igw-01f198426702b59af --tags Key=Name,Value=internet-gateway
 
 // Attach it to our VPC
-aws ec2 attach-internet-gateway --vpc-id vpc-0cfbc96fbaef27b5e --internet-gateway-id igw-01f198426702b59af
+aws ec2 attach-internet-gateway --vpc-id vpc-04f53b26552a874ba --internet-gateway-id igw-01f198426702b59af
 
 // Creating a route table for the public subnets
-aws ec2 create-route-table --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 create-route-table --vpc-id vpc-04f53b26552a874ba
 aws ec2 create-route --route-table-id rtb-04c386fe8410bb542 --destination-cidr-block 0.0.0.0/0 --gateway-id igw-01f198426702b59af
 aws ec2 create-tags --resources rtb-04c386fe8410bb542 --tags Key=Name,Value=public-route-table
 
 // Attach the public route tables to the public subnets
-aws ec2 associate-route-table --subnet-id subnet-066be760f64aba411 --route-table-id rtb-04c386fe8410bb542
-aws ec2 associate-route-table --subnet-id subnet-0f81e9d1e089a99da --route-table-id rtb-04c386fe8410bb542
+aws ec2 associate-route-table --subnet-id subnet-0d0ef1f270d7f4f74 --route-table-id rtb-04c386fe8410bb542
+aws ec2 associate-route-table --subnet-id subnet-0a04f996d4d867e76 --route-table-id rtb-04c386fe8410bb542
 
 // Give everything in the public subnet a public ip:
-aws ec2 modify-subnet-attribute --subnet-id subnet-066be760f64aba411 --map-public-ip-on-launch
-aws ec2 modify-subnet-attribute --subnet-id subnet-0f81e9d1e089a99da --map-public-ip-on-launch
+aws ec2 modify-subnet-attribute --subnet-id subnet-0d0ef1f270d7f4f74 --map-public-ip-on-launch
+aws ec2 modify-subnet-attribute --subnet-id subnet-0a04f996d4d867e76 --map-public-ip-on-launch
 
 // Create a NAT gateway in the public subnet
 // A NAT gateway needs an elastic ip address (costs 0.01 cent per hour or 7dollar a month)
 aws ec2 allocate-address
-aws ec2 create-nat-gateway --subnet-id subnet-066be760f64aba411 --allocation-id eipalloc-ac7b7f95
+aws ec2 create-nat-gateway --subnet-id subnet-0d0ef1f270d7f4f74 --allocation-id eipalloc-ac7b7f95
 
 // Create route tables for private subnet with outbound rule that points all traffic 0.0.0.0/0 to the nat gateway
-aws ec2 create-route-table --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 create-route-table --vpc-id vpc-04f53b26552a874ba
 aws ec2 create-route --route-table-id rtb-00b351ba1c55f8b50 --destination-cidr-block 0.0.0.0/0 --gateway-id nat-08119640b82d74026
 aws ec2 create-tags --resources rtb-00b351ba1c55f8b50 --tags Key=Name,Value=private-route-table
 
@@ -94,11 +85,11 @@ aws iam add-role-to-instance-profile --instance-profile-name ssm-instance-profil
 aws ec2 describe-security-groups
 
 // Create security group in VPC with outbound access to 0.0.0.0/0 on port 80 add rule for allowing ssh
-aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-04f53b26552a874ba
 aws ec2 authorize-security-group-ingress --group-id sg-096742150b3b8a4f2 --protocol tcp --port 80 --source-group sg-01b3597513993280c
 
 // Create security group for application load balancer
-aws ec2 create-security-group --group-name load-balancer-group --description "Security group for load balancer" --vpc-id vpc-0cfbc96fbaef27b5e
+aws ec2 create-security-group --group-name load-balancer-group --description "Security group for load balancer" --vpc-id vpc-04f53b26552a874ba
 aws ec2 authorize-security-group-ingress --group-id sg-01b3597513993280c --protocol tcp --port 80 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-egress --group-id sg-01b3597513993280c --protocol tcp --port 80 --source-group sg-096742150b3b8a4f2
 
@@ -107,12 +98,12 @@ https://aws.amazon.com/premiumsupport/knowledge-center/public-load-balancer-priv
 https://docs.aws.amazon.com/elasticloadbalancing/latest/application/tutorial-application-load-balancer-cli.html
 
 // Create application load balancer
-aws elbv2 create-load-balancer --name application-load-balancer --subnets subnet-066be760f64aba411 subnet-0f81e9d1e089a99da --security-groups sg-01b3597513993280c
+aws elbv2 create-load-balancer --name application-load-balancer --subnets subnet-0d0ef1f270d7f4f74 subnet-0a04f996d4d867e76 --security-groups sg-01b3597513993280c
 
 arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
 
 // Create target group
-aws elbv2 create-target-group --name node-ec2-instances --protocol HTTP --port 80 --vpc-id vpc-0cfbc96fbaef27b5e
+aws elbv2 create-target-group --name node-ec2-instances --protocol HTTP --port 80 --vpc-id vpc-04f53b26552a874ba
 
 // Create ec2 instance ami-0db9040eb3ab74509
 aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-050bcaac94fba9394 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
