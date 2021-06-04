@@ -33,31 +33,33 @@ aws ec2 create-subnet --cidr-block 172.31.3.0/24 --vpc-id vpc-04f53b26552a874ba 
 // Giving subnets name tags
 aws ec2 create-tags --resources subnet-0d0ef1f270d7f4f74 --tags Key=Name,Value=public-subnet-a
 aws ec2 create-tags --resources subnet-0a04f996d4d867e76 --tags Key=Name,Value=public-subnet-b
-aws ec2 create-tags --resources subnet-050bcaac94fba9394 --tags Key=Name,Value=private-subnet-a
-aws ec2 create-tags --resources subnet-09b288533a25a19c9 --tags Key=Name,Value=private-subnet-b
+aws ec2 create-tags --resources subnet-093ea7a0e05a541a7 --tags Key=Name,Value=private-subnet-a
+aws ec2 create-tags --resources subnet-07c908ced8ef41ac5 --tags Key=Name,Value=private-subnet-b
 
 // List internet gateways
 aws ec2 describe-internet-gateways
 
 // Create an internet gateway
 aws ec2 create-internet-gateway
-aws ec2 create-tags --resources igw-01f198426702b59af --tags Key=Name,Value=internet-gateway
+aws ec2 create-tags --resources igw-0bf1d2d1486b2aa1e --tags Key=Name,Value=internet-gateway
 
 // Attach it to our VPC
-aws ec2 attach-internet-gateway --vpc-id vpc-04f53b26552a874ba --internet-gateway-id igw-01f198426702b59af
+aws ec2 attach-internet-gateway --vpc-id vpc-04f53b26552a874ba --internet-gateway-id igw-0bf1d2d1486b2aa1e
 
 // Creating a route table for the public subnets
 aws ec2 create-route-table --vpc-id vpc-04f53b26552a874ba
-aws ec2 create-route --route-table-id rtb-04c386fe8410bb542 --destination-cidr-block 0.0.0.0/0 --gateway-id igw-01f198426702b59af
-aws ec2 create-tags --resources rtb-04c386fe8410bb542 --tags Key=Name,Value=public-route-table
+aws ec2 create-route --route-table-id rtb-0bbdd585c1ec7dc9c --destination-cidr-block 0.0.0.0/0 --gateway-id igw-0bf1d2d1486b2aa1e
+aws ec2 create-tags --resources rtb-0bbdd585c1ec7dc9c --tags Key=Name,Value=public-route-table
 
 // Attach the public route tables to the public subnets
-aws ec2 associate-route-table --subnet-id subnet-0d0ef1f270d7f4f74 --route-table-id rtb-04c386fe8410bb542
-aws ec2 associate-route-table --subnet-id subnet-0a04f996d4d867e76 --route-table-id rtb-04c386fe8410bb542
+aws ec2 associate-route-table --subnet-id subnet-0d0ef1f270d7f4f74 --route-table-id rtb-0bbdd585c1ec7dc9c
+aws ec2 associate-route-table --subnet-id subnet-0a04f996d4d867e76 --route-table-id rtb-0bbdd585c1ec7dc9c
 
 // Give everything in the public subnet a public ip:
-aws ec2 modify-subnet-attribute --subnet-id subnet-0d0ef1f270d7f4f74 --map-public-ip-on-launch
-aws ec2 modify-subnet-attribute --subnet-id subnet-0a04f996d4d867e76 --map-public-ip-on-launch
+aws ec2 modify-subnet-attribute --subnet-id subnet-0d0ef1f270d7f4f74 --no-map-public-ip-on-launch
+aws ec2 modify-subnet-attribute --subnet-id subnet-0a04f996d4d867e76 --no-map-public-ip-on-launch
+
+HIER WAS IK
 
 // Create a NAT gateway in the public subnet
 // A NAT gateway needs an elastic ip address (costs 0.01 cent per hour or 7dollar a month)
@@ -70,8 +72,8 @@ aws ec2 create-route --route-table-id rtb-00b351ba1c55f8b50 --destination-cidr-b
 aws ec2 create-tags --resources rtb-00b351ba1c55f8b50 --tags Key=Name,Value=private-route-table
 
 // Attach the private route tables to the private subnets
-aws ec2 associate-route-table --subnet-id subnet-050bcaac94fba9394 --route-table-id rtb-00b351ba1c55f8b50
-aws ec2 associate-route-table --subnet-id subnet-09b288533a25a19c9 --route-table-id rtb-00b351ba1c55f8b50
+aws ec2 associate-route-table --subnet-id subnet-093ea7a0e05a541a7 --route-table-id rtb-00b351ba1c55f8b50
+aws ec2 associate-route-table --subnet-id subnet-07c908ced8ef41ac5 --route-table-id rtb-00b351ba1c55f8b50
 
 // So aws has something called "Systems manager" https://aws.amazon.com/systems-manager/
 // to be able to use it, we need to create a role for future EC2 instance to be able to SSH
@@ -84,7 +86,7 @@ aws iam add-role-to-instance-profile --instance-profile-name ssm-instance-profil
 
 aws ec2 describe-security-groups
 
-// Create security group in VPC with outbound access to 0.0.0.0/0 on port 80 add rule for allowing ssh
+// Create security group in VPC with outbound access to 0.0.0.0/0 on port 80
 aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-04f53b26552a874ba
 aws ec2 authorize-security-group-ingress --group-id sg-096742150b3b8a4f2 --protocol tcp --port 80 --source-group sg-01b3597513993280c
 
@@ -106,8 +108,8 @@ arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/applicat
 aws elbv2 create-target-group --name node-ec2-instances --protocol HTTP --port 80 --vpc-id vpc-04f53b26552a874ba
 
 // Create ec2 instance ami-0db9040eb3ab74509
-aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-050bcaac94fba9394 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
-aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-09b288533a25a19c9 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
+aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-093ea7a0e05a541a7 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
+aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-07c908ced8ef41ac5 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
 
 aws ssm describe-instance-information
 
