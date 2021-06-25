@@ -1,20 +1,21 @@
+aws ec2 terminate-instances --instance-ids i-0cc40deb924d82544 i-0d0b4f0f2f855d192
 
 aws elbv2 describe-listeners --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
-aws elbv2 delete-listener --listener-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:listener/app/application-load-balancer/97cf62a2e2f0b615/103e0a1e4758a793
+aws elbv2 delete-listener --listener-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:listener/app/application-load-balancer/396043a506bd945d/fe732666a6208c1a
 
 aws elbv2 describe-target-groups
-aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/28410eb694e6b1c6
+aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/9176b6bba0bec4b2
 
 aws elbv2 describe-load-balancers --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
-aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
+aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/396043a506bd945d
 
 aws ec2 describe-security-groups
+                                                 <web server security group>                                  <load balancer security group>
+aws ec2 revoke-security-group-ingress --group-id sg-04814ad259800944e --protocol tcp --port 80 --source-group sg-0058a772bf77bd84e
 
-aws ec2 revoke-security-group-ingress --group-id sg-096742150b3b8a4f2 --protocol tcp --port 80 --source-group sg-01b3597513993280c
+aws ec2 delete-security-group --group-id sg-0058a772bf77bd84e
 
-aws ec2 delete-security-group --group-id sg-01b3597513993280c
-
-aws ec2 delete-security-group --group-id sg-096742150b3b8a4f2
+aws ec2 delete-security-group --group-id sg-04814ad259800944e
 
 aws ec2 delete-key-pair --name key-pair-for-instance1
 
@@ -27,28 +28,30 @@ aws iam delete-role --role-name ec2-role
 
 // Disassociate the route tables with the private subnets
 aws ec2 describe-route-tables
-aws ec2 disassociate-route-table --association-id rtbassoc-065d1835f4fe23963
-aws ec2 disassociate-route-table --association-id rtbassoc-03fdcf59594a8fb9b
-aws ec2 delete-route-table --route-table-id rtb-00b351ba1c55f8b50
-subnet-09b288533a25a19c9 subnet-050bcaac94fba9394
+aws ec2 disassociate-route-table --association-id rtbassoc-0504fa2a5ffa6351e
+aws ec2 disassociate-route-table --association-id rtbassoc-031141634fdc5a7ab
+aws ec2 delete-route-table --route-table-id rtb-08f5c989a905413ee
+aws ec2 delete-route-table --route-table-id rtb-0d1935c156186e5f7
 
 // Disassociate the route tables with the public subnets
-aws ec2 disassociate-route-table --association-id rtbassoc-007bd499d612b9640
-aws ec2 disassociate-route-table --association-id rtbassoc-0637e884a532d3939
-aws ec2 delete-route-table --route-table-id rtb-04c386fe8410bb542
-
-aws ec2 describe-addresses
-aws ec2 release-address --allocation-id eipalloc-ac7b7f95
+aws ec2 disassociate-route-table --association-id rtbassoc-09ef12a59c971ddf7
+aws ec2 disassociate-route-table --association-id rtbassoc-03a0b90e60fc2c763
+aws ec2 delete-route-table --route-table-id rtb-0bbdd585c1ec7dc9c
 
 aws ec2 describe-nat-gateways
-aws ec2 delete-nat-gateway --nat-gateway-id nat-08119640b82d74026
+aws ec2 delete-nat-gateway --nat-gateway-id nat-074767bb4ee923bb3
+aws ec2 delete-nat-gateway --nat-gateway-id nat-0e1201a5cab7588b8
+
+aws ec2 describe-addresses
+aws ec2 release-address --allocation-id eipalloc-d683e5e9
+aws ec2 release-address --allocation-id eipalloc-4acfa975
 
 aws ec2 detach-internet-gateway --vpc-id vpc-0cfbc96fbaef27b5e --internet-gateway-id igw-01f198426702b59af
 aws ec2 delete-internet-gateway --internet-gateway-id igw-01f198426702b59af
 
-aws ec2 delete-subnet --subnet-id subnet-066be760f64aba411
-aws ec2 delete-subnet --subnet-id subnet-0f81e9d1e089a99da
-aws ec2 delete-subnet --subnet-id subnet-050bcaac94fba9394
-aws ec2 delete-subnet --subnet-id subnet-09b288533a25a19c9
+aws ec2 delete-subnet --subnet-id subnet-093ea7a0e05a541a7
+aws ec2 delete-subnet --subnet-id subnet-07c908ced8ef41ac5
+aws ec2 delete-subnet --subnet-id subnet-0d0ef1f270d7f4f74
+aws ec2 delete-subnet --subnet-id subnet-0a04f996d4d867e76
 
 aws ec2 delete-vpc --vpc-id vpc-0cfbc96fbaef27b5e

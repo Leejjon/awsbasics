@@ -64,16 +64,42 @@ HIER WAS IK
 // Create a NAT gateway in the public subnet
 // A NAT gateway needs an elastic ip address (costs 0.01 cent per hour or 7dollar a month)
 aws ec2 allocate-address
-aws ec2 create-nat-gateway --subnet-id subnet-0d0ef1f270d7f4f74 --allocation-id eipalloc-ac7b7f95
+aws ec2 create-nat-gateway --subnet-id subnet-0d0ef1f270d7f4f74 --allocation-id eipalloc-d683e5e9
+aws ec2 allocate-address
+aws ec2 create-nat-gateway --subnet-id subnet-0a04f996d4d867e76 --allocation-id eipalloc-4acfa975
+
+// Naming the NAT gateways
+aws ec2 create-tags --resources nat-074767bb4ee923bb3 --tags Key=Name,Value=nat-gateway-private-subnet-a
+aws ec2 create-tags --resources nat-0e1201a5cab7588b8 --tags Key=Name,Value=nat-gateway-private-subnet-b
 
 // Create route tables for private subnet with outbound rule that points all traffic 0.0.0.0/0 to the nat gateway
 aws ec2 create-route-table --vpc-id vpc-04f53b26552a874ba
-aws ec2 create-route --route-table-id rtb-00b351ba1c55f8b50 --destination-cidr-block 0.0.0.0/0 --gateway-id nat-08119640b82d74026
-aws ec2 create-tags --resources rtb-00b351ba1c55f8b50 --tags Key=Name,Value=private-route-table
+aws ec2 create-route --route-table-id rtb-0d1935c156186e5f7 --destination-cidr-block 0.0.0.0/0 --gateway-id nat-074767bb4ee923bb3
+aws ec2 create-tags --resources rtb-0d1935c156186e5f7 --tags Key=Name,Value=private-route-table-a
+
+// Create route tables for private subnet with outbound rule that points all traffic 0.0.0.0/0 to the nat gateway
+aws ec2 create-route-table --vpc-id vpc-04f53b26552a874ba
+aws ec2 create-route --route-table-id rtb-08f5c989a905413ee --destination-cidr-block 0.0.0.0/0 --gateway-id nat-0e1201a5cab7588b8
+aws ec2 create-tags --resources rtb-08f5c989a905413ee --tags Key=Name,Value=private-route-table-b
 
 // Attach the private route tables to the private subnets
-aws ec2 associate-route-table --subnet-id subnet-093ea7a0e05a541a7 --route-table-id rtb-00b351ba1c55f8b50
-aws ec2 associate-route-table --subnet-id subnet-07c908ced8ef41ac5 --route-table-id rtb-00b351ba1c55f8b50
+aws ec2 associate-route-table --subnet-id subnet-093ea7a0e05a541a7 --route-table-id rtb-0d1935c156186e5f7
+aws ec2 associate-route-table --subnet-id subnet-07c908ced8ef41ac5 --route-table-id rtb-08f5c989a905413ee
+
+aws ec2 describe-security-groups
+
+// Create security group in VPC with outbound access to 0.0.0.0/0 on port 80
+aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-04f53b26552a874ba
+aws ec2 authorize-security-group-ingress --group-id sg-04814ad259800944e --protocol tcp --port 80 --source-group sg-0058a772bf77bd84e
+
+// Create security group for application load balancer
+aws ec2 create-security-group --group-name load-balancer-group --description "Security group for load balancer" --vpc-id vpc-04f53b26552a874ba
+aws ec2 authorize-security-group-ingress --group-id sg-0058a772bf77bd84e --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-egress --group-id sg-0058a772bf77bd84e --protocol tcp --port 80 --source-group sg-04814ad259800944e
+
+https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancer-cli.html
+https://aws.amazon.com/premiumsupport/knowledge-center/public-load-balancer-private-ec2/
+https://docs.aws.amazon.com/elasticloadbalancing/latest/application/tutorial-application-load-balancer-cli.html
 
 // So aws has something called "Systems manager" https://aws.amazon.com/systems-manager/
 // to be able to use it, we need to create a role for future EC2 instance to be able to SSH
@@ -84,37 +110,24 @@ aws iam attach-role-policy --role-name ec2-role --policy-arn "arn:aws:iam::aws:p
 aws iam create-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances
 aws iam add-role-to-instance-profile --instance-profile-name ssm-instance-profile-for-ec2-instances --role-name ec2-role
 
-aws ec2 describe-security-groups
-
-// Create security group in VPC with outbound access to 0.0.0.0/0 on port 80
-aws ec2 create-security-group --group-name web-servers --description "Security group for web servers" --vpc-id vpc-04f53b26552a874ba
-aws ec2 authorize-security-group-ingress --group-id sg-096742150b3b8a4f2 --protocol tcp --port 80 --source-group sg-01b3597513993280c
-
-// Create security group for application load balancer
-aws ec2 create-security-group --group-name load-balancer-group --description "Security group for load balancer" --vpc-id vpc-04f53b26552a874ba
-aws ec2 authorize-security-group-ingress --group-id sg-01b3597513993280c --protocol tcp --port 80 --cidr 0.0.0.0/0
-aws ec2 authorize-security-group-egress --group-id sg-01b3597513993280c --protocol tcp --port 80 --source-group sg-096742150b3b8a4f2
-
-https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancer-cli.html
-https://aws.amazon.com/premiumsupport/knowledge-center/public-load-balancer-private-ec2/
-https://docs.aws.amazon.com/elasticloadbalancing/latest/application/tutorial-application-load-balancer-cli.html
-
 // Create application load balancer
-aws elbv2 create-load-balancer --name application-load-balancer --subnets subnet-0d0ef1f270d7f4f74 subnet-0a04f996d4d867e76 --security-groups sg-01b3597513993280c
+aws elbv2 create-load-balancer --name application-load-balancer --subnets subnet-0d0ef1f270d7f4f74 subnet-0a04f996d4d867e76 --security-groups sg-0058a772bf77bd84e
 
 arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615
 
 // Create target group
 aws elbv2 create-target-group --name node-ec2-instances --protocol HTTP --port 80 --vpc-id vpc-04f53b26552a874ba
 
+
+
 // Create ec2 instance ami-0db9040eb3ab74509
-aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-093ea7a0e05a541a7 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
-aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --key-name key-pair-for-instance1 --security-group-ids sg-096742150b3b8a4f2 --subnet-id subnet-07c908ced8ef41ac5 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
+aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --security-group-ids sg-04814ad259800944e --subnet-id subnet-093ea7a0e05a541a7 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
+aws ec2 run-instances --image-id ami-0db9040eb3ab74509 --count 1 --instance-type t2.micro --security-group-ids sg-04814ad259800944e --subnet-id subnet-07c908ced8ef41ac5 --iam-instance-profile Name=ssm-instance-profile-for-ec2-instances
 
 aws ssm describe-instance-information
 
 // SSH into ec2 instance via AWS Systems Manager
-aws ssm start-session --target i-0c6a362d6ef3741ce
+aws ssm start-session --target i-0d0b4f0f2f855d192
 
 Type 'bash' and 'cd '.
 
@@ -154,10 +167,10 @@ kill -9 <the first number of previous command>
 Source: https://stackoverflow.com/questions/20091433/cant-find-out-where-does-a-node-js-app-running-and-cant-kill-it
 
 // Back to the loadbalancer, let's add the instances to the target group:
-aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/28410eb694e6b1c6 --targets Id=i-0ba2ab69b69b675c2 Id=i-0f5e0df8467df78d3
+aws elbv2 register-targets --target-group-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/9176b6bba0bec4b2 --targets Id=i-0cc40deb924d82544 Id=i-0d0b4f0f2f855d192
 
 // Create listener with target group and loadbalancer
-aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/97cf62a2e2f0b615 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/28410eb694e6b1c6
+aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:eu-central-1:039085306114:loadbalancer/app/application-load-balancer/396043a506bd945d --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:eu-central-1:039085306114:targetgroup/node-ec2-instances/9176b6bba0bec4b2
 
 Note: Access logging is an optional feature of Elastic Load Balancing that is disabled by default. After you enable access logging for your load balancer, Elastic Load Balancing captures the logs and stores them in the Amazon S3 bucket that you specify as compressed files. You can disable access logging at any time.
 Source: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
